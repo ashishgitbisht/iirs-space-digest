@@ -1,0 +1,34 @@
+name: 🚀 IIRS Daily Space Digest + Gmail
+on:
+  schedule:
+    - cron: '30 3 * * *'  # 9AM IST daily
+  workflow_dispatch:     # Manual button
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install feedparser
+      run: pip install feedparser
+      
+    - name: Generate HTML Newsletter
+      run: python iirs_space_digest_git.py
+      
+    - name: ✅ Send HTML to Gmail
+      uses: dawidd6/action-send-mail@v4
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.GMAIL_USER }}
+        password: ${{ secrets.GMAIL_PASS }}
+        subject: '🚀 IIRS Daily Space Digest | ${{ github.run_id }}'
+        to: ${{ secrets.GMAIL_USER }}
+        from: 'IIRS Library <${{ secrets.GMAIL_USER }}>'
+        attachments: 'iirs_news_*.html'
