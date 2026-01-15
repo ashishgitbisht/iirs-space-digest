@@ -199,7 +199,7 @@ body {{
 """ + "".join([f"""
         <div class="news-card">
             <div class="card-content">
-                {f'<img src="{item['image']}" alt="Space news image" class="card-image" loading="lazy">' if item['image'] else ''}
+                (f'<img src="{item.get("image", "")}" alt="Space news image" class="card-image" loading="lazy">' if item.get("image") else '')
                 <div class="card-title">
                     <a href="{item['link']}" target="_blank" style="color:#1e40af;text-decoration:none;font-weight:600">{i}. {item['title']}</a>
                 </div>
