@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 IIRS Space Digest - PythonAnywhere Production Version
-Daily automated space news for IIRS employees
+Daily automated space news for IIRS employees (TODAY'S NEWS ONLY)
 """
 
 import feedparser
 import re
-from datetime import date
+from datetime import date, timedelta
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+import time
 
 print("🚀 Starting IIRS Daily Space Digest...")
 
@@ -32,11 +33,10 @@ feeds = [
 ]
 
 def extract_first_image_url(html_content):
-    """✅ Extract first clean image URL from RSS HTML - FIXED REGEX"""
+    """✅ Extract first clean image URL from RSS HTML"""
     if not html_content:
         return None
     
-    # ✅ SIMPLIFIED SAFE PATTERNS - NO PARENTHESIS ERRORS
     img_patterns = [
         r'<img[^>]+src=["\']([^"\']+\.(?:jpg|jpeg|png|gif|webp))["\'][^>]*>',
         r'<media:content[^>]+url=["\'][^"\']+["\'][^>]*>',
@@ -59,37 +59,106 @@ def sanitize_html_content(text):
     text = re.sub(r'\s+', ' ', text)
     return text[:380] + '...' if len(text) > 380 else text.strip()
 
-# ✅ Generate news digest
+def is_today_or_yesterday(entry):
+    """✅ Check if article is from today or yesterday"""
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    
+    # Try published date first, then updated date
+    for date_field in ['published_parsed', 'updated_parsed']:
+        if date_field in entry and entry[date_field]:
+            try:
+                entry_date = date(
+                    entry[date_field].tm_year,
+                    entry[date_field].tm_mon, 
+                    entry[date_field].tm_mday
+                )
+                return entry_date == today or entry_date == yesterday
+            except:
+                continue
+    
+    # Fallback: try string parsing
+    for date_str in [entry.get('published'), entry.get('updated'), entry.get('created')]:
+        if date_str:
+            try:
+                entry_time = time.strptime(date_str[:10], '%Y-%m-%d')  # YYYY-MM-DD
+                entry_date = date(entry_time.tm_year, entry_time.tm_mon, entry_time.tm_mday)
+                if entry_date == today or entry_date == yesterday:
+                    return True
+            except:
+                continue
+    
+    return False
+
+# ✅ TODAY'S NEWS ONLY
 news_digest = []
-print("📡 Fetching space news from 11 sources...")
+print("📡 Fetching TODAY'S space news from 11 sources...")
+today_count = 0
+
 for url in feeds:
     try:
         feed = feedparser.parse(url)
-        for entry in feed.entries[:3]:
-            raw_summary = entry.get('summary', '') or entry.get('description', '')
-            image_url = extract_first_image_url(raw_summary)
-            summary = sanitize_html_content(raw_summary)
-            title = re.sub(r'<[^>]+>', '', entry.title)
+        print(f"📱 {feed.feed.get('title', 'Unknown')} - checking...")
+        
+        for entry in feed.entries[:10]:  # Check first 10 entries
+            if is_today_or_yesterday(entry):
+                raw_summary = entry.get('summary', '') or entry.get('description', '')
+                image_url = extract_first_image_url(raw_summary)
+                summary = sanitize_html_content(raw_summary)
+                title = re.sub(r'<[^>]+>', '', entry.title)
 
-            news_digest.append({
-                'title': title,
-                'link': entry.link,
-                'source': feed.feed.get('title', 'Space News')[:20] + '...',
-                'summary': summary,
-                'image': image_url
-            })
+                news_digest.append({
+                    'title': title,
+                    'link': entry.link,
+                    'source': feed.feed.get('title', 'Space News')[:20] + '...',
+                    'summary': summary,
+                    'image': image_url
+                })
+                today_count += 1
+                print(f"✅ TODAY: {title[:60]}...")
+                
+                if len(news_digest) >= 12:  # Max 12 fresh articles
+                    break
+        
+        if len(news_digest) >= 12:
+            break
+            
     except Exception as e:
         print(f"⚠️ Skip {url}: {e}")
 
-print(f"✅ Fetched {len(news_digest)} news items")
+print(f"✅ Fetched {len(news_digest)} FRESH articles from today!")
+
+if len(news_digest) == 0:
+    print("⚠️ No today's news found - using recent articles...")
+    # Fallback: use most recent 6 articles
+    for url in feeds[:3]:  # Just first 3 feeds
+        try:
+            feed = feedparser.parse(url)
+            for entry in feed.entries[:2]:
+                raw_summary = entry.get('summary', '') or entry.get('description', '')
+                image_url = extract_first_image_url(raw_summary)
+                summary = sanitize_html_content(raw_summary)
+                title = re.sub(r'<[^>]+>', '', entry.title)
+
+                news_digest.append({
+                    'title': title,
+                    'link': entry.link,
+                    'source': feed.feed.get('title', 'Space News')[:20] + '...',
+                    'summary': summary,
+                    'image': image_url
+                })
+                if len(news_digest) >= 6:
+                    break
+            if len(news_digest) >= 6:
+                break
+        except:
+            continue
 
 # ✅ FIXED HTML GENERATION
 timestamp = date.today().strftime("%d-%m-%Y")
-
-# Build articles HTML first (separate f-string)
 articles_html = ""
+
 for i, item in enumerate(news_digest, 1):
-    # ✅ FIXED IMAGE HANDLING
     image_html = ''
     if item.get("image"):
         image_html = f'<img src="{item["image"]}" alt="Space news image" class="card-image" loading="lazy" onerror="this.style.display=\'none\'">'
