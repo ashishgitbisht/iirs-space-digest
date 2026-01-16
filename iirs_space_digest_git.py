@@ -18,20 +18,18 @@ print("🚀 Starting IIRS Daily Space Digest...")
 
 # Verified working space agency RSS feeds
 feeds = [
-    'https://www.esa.int/rss/rss-topnews.xml',  # ESA space missions
-    'https://www.esa.int/rss/programmes.xml',        # Ariane/vegla
-    'https://www.esa.int/rss/space_science.xml',     # JUICE/PLATO missions
-    'https://www.esa.int/rss/earth_observation.xml', # Sentinel satellites
-    'https://www.nasa.gov/rss/dyn/breaking_news.rss', # NASA updates
-    'https://www.nasa.gov/rss/dyn/images_of_the_day.rss', # Satellite images
-    'https://www.space.com/feeds/all',            # Space.com main
-    'https://spaceflightnow.com/feed/',           # Launch updates
-    'https://phys.org/rss-feed/space-news/',      # Physics.org space
-    'https://www.thespacereview.com/rss.xml',     # Weekly analysis
-    'https://interestingengineering.com/feed',    # Tech breakthroughs
+    'https://www.esa.int/rss/rss-topnews.xml',
+    'https://www.esa.int/rss/programmes.xml',        
+    'https://www.esa.int/rss/space_science.xml',     
+    'https://www.esa.int/rss/earth_observation.xml', 
+    'https://www.nasa.gov/rss/dyn/breaking_news.rss', 
+    'https://www.nasa.gov/rss/dyn/images_of_the_day.rss', 
+    'https://www.space.com/feeds/all',            
+    'https://spaceflightnow.com/feed/',           
+    'https://phys.org/rss-feed/space-news/',      
+    'https://www.thespacereview.com/rss.xml',     
+    'https://interestingengineering.com/feed',    
 ]
-
-
 
 def extract_first_image_url(html_content):
     """✅ Extract first clean image URL from RSS HTML"""
@@ -39,8 +37,8 @@ def extract_first_image_url(html_content):
         return None
     img_patterns = [
         r'<img[^>]+src=["\']([^"\']+\.(jpg|jpeg|png|gif|webp))["\'][^>]*>',
-        r'<media:content[^>]+url=["\']([^"\']+)["\'][^>]*>',
-        r'<enclosure[^>]+url=["\']([^"\']+)["\'][^>]*>'
+        r'<media:content[^>]+url=["\']([^"\\']+)["\'][^>]*>',
+        r'<enclosure[^>]+url=["\']([^"\\']+)["\'][^>]*>'
     ]
     for pattern in img_patterns:
         match = re.search(pattern, html_content, re.IGNORECASE)
@@ -58,7 +56,7 @@ def sanitize_html_content(text):
     text = re.sub(r'\s+', ' ', text)
     return text[:380] + '...' if len(text) > 380 else text.strip()
 
-# ✅ Generate news digest (ERROR HANDLING ADDED)
+# ✅ Generate news digest
 news_digest = []
 print("📡 Fetching space news from 11 sources...")
 for url in feeds:
@@ -82,8 +80,35 @@ for url in feeds:
 
 print(f"✅ Fetched {len(news_digest)} news items")
 
-# Generate beautiful HTML newsletter
+# ✅ FIXED HTML GENERATION (NO MORE CODE SPILLING!)
 timestamp = date.today().strftime("%d-%m-%Y")
+
+# Build articles HTML first (separate f-string)
+articles_html = ""
+for i, item in enumerate(news_digest, 1):
+    # ✅ FIXED IMAGE HANDLING
+    image_html = ''
+    if item.get("image"):
+        image_html = f'''
+        <img src="{item["image"]}" alt="Space news image" class="card-image" loading="lazy" 
+             onerror="this.style.display='none'">
+        '''
+    
+    articles_html += f'''
+        <div class="news-card">
+            <div class="card-content">
+                {image_html}
+                <div class="card-title">
+                    <a href="{item['link']}" target="_blank" style="color:#1e40af;text-decoration:none;font-weight:600">{i}. {item['title']}</a>
+                </div>
+                <div class="card-source">{item['source']}</div>
+                <div class="card-summary">{item['summary']}</div>
+                <a href="{item['link']}" target="_blank" class="read-more">Read Full Article →</a>
+            </div>
+        </div>
+    '''
+
+# ✅ Now build complete HTML
 html_body = f"""
 <!DOCTYPE html>
 <html>
@@ -196,19 +221,7 @@ body {{
 
 <div class="content-wrapper">
     <div class="scroll-container">
-""" + "".join([f"""
-        <div class="news-card">
-            <div class="card-content">
-                (f'<img src="{item.get("image", "")}" alt="Space news image" class="card-image" loading="lazy">' if item.get("image") else '')
-                <div class="card-title">
-                    <a href="{item['link']}" target="_blank" style="color:#1e40af;text-decoration:none;font-weight:600">{i}. {item['title']}</a>
-                </div>
-                <div class="card-source">{item['source']}</div>
-                <div class="card-summary">{item['summary']}</div>
-                <a href="{item['link']}" target="_blank" class="read-more">Read Full Article →</a>
-            </div>
-        </div>
-""" for i, item in enumerate(news_digest, 1)]) + """
+        {articles_html}
         <div class="scroll-spacer"></div>
     </div>
 </div>
@@ -222,11 +235,11 @@ body {{
 </html>
 """
 
-# ✅ Save timestamped HTML file (PythonAnywhere compatible)
+# ✅ Save timestamped HTML file
 filename = f'iirs_news_{date.today().strftime("%Y%m%d")}.html'
 with open(filename, 'w', encoding='utf-8') as f:
     f.write(html_body)
 
 print(f"✅ SAVED: {filename} with {len(news_digest)} items")
-print(f"📁 View at: https://ashshbsht.pythonanywhere.com/files/home/ashshbsht/{filename}")
+#print(f"📁 View at: https://ashshbsht.pythonanywhere.com/files/home/ashshbsht/{filename}")
 print("🎉 Ready for GitHub Actions email!")
