@@ -2,7 +2,7 @@
 """
 IIRS Space Digest - PythonAnywhere Production Version
 Daily automated space news for IIRS employees (TODAY'S NEWS ONLY)
-COSMIC VOID THEME - Pure Black Minimalist
+COSMIC VOID THEME - 75% WIDTH UPGRADE
 """
 
 import feedparser
@@ -16,7 +16,7 @@ from email import encoders
 import os
 import time
 
-print("🚀 Starting IIRS Daily Space Digest - COSMIC VOID...")
+print("🚀 Starting IIRS Daily Space Digest - COSMIC VOID 75%...")
 
 # Verified working space agency RSS feeds
 feeds = [
@@ -65,7 +65,6 @@ def is_today_or_yesterday(entry):
     today = date.today()
     yesterday = today - timedelta(days=1)
     
-    # Try published date first, then updated date
     for date_field in ['published_parsed', 'updated_parsed']:
         if date_field in entry and entry[date_field]:
             try:
@@ -78,11 +77,10 @@ def is_today_or_yesterday(entry):
             except:
                 continue
     
-    # Fallback: try string parsing
     for date_str in [entry.get('published'), entry.get('updated'), entry.get('created')]:
         if date_str:
             try:
-                entry_time = time.strptime(date_str[:10], '%Y-%m-%d')  # YYYY-MM-DD
+                entry_time = time.strptime(date_str[:10], '%Y-%m-%d')
                 entry_date = date(entry_time.tm_year, entry_time.tm_mon, entry_time.tm_mday)
                 if entry_date == today or entry_date == yesterday:
                     return True
@@ -94,14 +92,13 @@ def is_today_or_yesterday(entry):
 # ✅ TODAY'S NEWS ONLY
 news_digest = []
 print("📡 Fetching TODAY'S space news from 11 sources...")
-today_count = 0
 
 for url in feeds:
     try:
         feed = feedparser.parse(url)
         print(f"📱 {feed.feed.get('title', 'Unknown')} - checking...")
         
-        for entry in feed.entries[:10]:  # Check first 10 entries
+        for entry in feed.entries[:10]:
             if is_today_or_yesterday(entry):
                 raw_summary = entry.get('summary', '') or entry.get('description', '')
                 image_url = extract_first_image_url(raw_summary)
@@ -115,10 +112,9 @@ for url in feeds:
                     'summary': summary,
                     'image': image_url
                 })
-                today_count += 1
                 print(f"✅ TODAY: {title[:60]}...")
                 
-                if len(news_digest) >= 12:  # Max 12 fresh articles
+                if len(news_digest) >= 12:
                     break
         
         if len(news_digest) >= 12:
@@ -131,8 +127,7 @@ print(f"✅ Fetched {len(news_digest)} FRESH articles from today!")
 
 if len(news_digest) == 0:
     print("⚠️ No today's news found - using recent articles...")
-    # Fallback: use most recent 6 articles
-    for url in feeds[:3]:  # Just first 3 feeds
+    for url in feeds[:3]:
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries[:2]:
@@ -155,7 +150,7 @@ if len(news_digest) == 0:
         except:
             continue
 
-# ✅ FIXED HTML GENERATION with COSMIC VOID THEME
+# ✅ 75% WIDTH HTML GENERATION
 timestamp = date.today().strftime("%d-%m-%Y")
 articles_html = ""
 
@@ -178,7 +173,7 @@ for i, item in enumerate(news_digest, 1):
         </div>
     '''
 
-# ✅ COSMIC VOID THEME - Pure Black Minimalist
+# ✅ COSMIC VOID THEME - 75% WIDTH UPGRADE
 html_body = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -193,7 +188,7 @@ html, body {{
 }}
 body {{ 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    max-width: 900px !important; 
+    max-width: 95vw !important; 
     margin: 20px auto !important; 
     /* 🌌 COSMIC VOID BACKGROUND */
     background: #0a0a0a !important;
@@ -240,8 +235,10 @@ body::before {{
     flex: 1 !important; 
     max-height: 85vh !important; 
     height: calc(100vh - 220px) !important; 
-    width: 100% !important;
-    max-width: 880px !important; 
+    /* 🔥 75% WIDTH UPGRADE */
+    width: 75% !important;
+    max-width: none !important;
+    min-width: 680px !important;
     margin: 0 auto !important; 
     overflow-y: auto !important; 
     overflow-x: hidden !important; 
@@ -252,7 +249,7 @@ body::before {{
     backdrop-filter: blur(30px) !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 24px !important; 
-    padding: 35px !important;
+    padding: 40px !important;
     box-shadow: 
         0 35px 70px rgba(0,0,0,0.8),
         inset 0 1px 0 rgba(255,255,255,0.05) !important;
@@ -264,14 +261,13 @@ body::before {{
     padding: 0 !important; 
 }}
 .card-content {{ 
-    /* 🌌 EXTREME GLASSMORPHISM */
     background: rgba(255,255,255,0.05) !important;
     backdrop-filter: blur(25px) saturate(1.3) !important;
     border: 1px solid rgba(255,255,255,0.1) !important;
     border-left: 3px solid transparent !important;
     background-clip: padding-box !important;
     border-radius: 24px !important; 
-    padding: 35px !important; 
+    padding: 40px !important; 
     box-shadow: 
         0 25px 60px rgba(0,0,0,0.6),
         0 0 0 1px rgba(255,255,255,0.08),
@@ -372,7 +368,6 @@ body::before {{
     padding: 30px !important;
     font-size: 14px !important;
 }}
-/* 🌌 MINIMAL SCROLLBARS */
 .scroll-container::-webkit-scrollbar {{ width: 8px !important; }}
 .scroll-container::-webkit-scrollbar-track {{ 
     background: rgba(10,10,10,0.9) !important; 
@@ -401,9 +396,25 @@ h2:hover {{
     color: #ffffff !important;
     text-shadow: 0 0 20px rgba(0,255,255,0.3) !important;
 }}
+/* 🔥 RESPONSIVE 75% WIDTH */
+@media screen and (max-width: 1400px) {{
+    .scroll-container {{ 
+        width: 85% !important; 
+        min-width: 600px !important;
+        padding: 35px !important;
+    }}
+}}
+@media screen and (max-width: 1000px) {{
+    .scroll-container {{ 
+        width: 92% !important; 
+        min-width: 0 !important;
+        padding: 30px !important;
+    }}
+    body {{ max-width: 98vw !important; }}
+}}
 @media screen and (max-width: 600px) {{
     .scroll-container {{ padding: 25px !important; }}
-    .card-content {{ padding: 30px !important; }}
+    .card-content {{ padding: 35px !important; }}
     h2 {{ font-size: 24px !important; }}
 }}
 </style>
@@ -426,16 +437,20 @@ h2:hover {{
 </html>"""
 
 # ✅ Save timestamped HTML file
-filename = f'iirs_news_void_{date.today().strftime("%Y%m%d")}.html'
+filename = f'iirs_news_void_75pct_{date.today().strftime("%Y%m%d")}.html'
 with open(filename, 'w', encoding='utf-8') as f:
     f.write(html_body)
 
-print(f"✅ SAVED: {filename} with {len(news_digest)} items (COSMIC VOID 🌌)")
-print("🎉 Ready for GitHub Actions email!")
+print(f"✅ SAVED: {filename} with {len(news_digest)} items (COSMIC VOID 75% 🌌)")
+print("🎉 75% WIDTH UPGRADE COMPLETE!")
 print("🌌 COSMIC VOID FEATURES:")
 print("   • Pure #0a0a0a void background")
-print("   • Ultra-faint white star drift")
-print("   • Extreme glassmorphism (rgba(255,255,255,0.05))")
-print("   • Silver → white gradient accents")
-print("   • Subtle cyan pulse hovers")
-print("   • Perfect minimalist mission control aesthetic!")
+print("   • Ultra-faint white star drift (40s)")
+print("   • Extreme glassmorphism cards")
+print("   • Cyan pulse hover effects")
+print("📏 NEW 75% WIDTH:")
+print("   • width: 75% (desktop)")
+print("   • Responsive: 85% tablet, 92% mobile") 
+print("   • min-width: 680px (readability)")
+print("   • padding: 40px (optimal spacing)")
+print("🎉 Production-ready for PythonAnywhere!")
