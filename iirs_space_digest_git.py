@@ -32,19 +32,22 @@ feeds = [
 ]
 
 def extract_first_image_url(html_content):
-    """✅ Extract first clean image URL from RSS HTML"""
+    """✅ Extract first clean image URL from RSS HTML - FIXED REGEX"""
     if not html_content:
         return None
+    
+    # ✅ SIMPLIFIED SAFE PATTERNS - NO PARENTHESIS ERRORS
     img_patterns = [
-        r'<img[^>]+src=["\']([^"\']+\.(jpg|jpeg|png|gif|webp))["\'][^>]*>',
-        r'<media:content[^>]+url=["\']([^"']+)["\'][^>]*>',
-        r'<enclosure[^>]+url=["\']([^"']+)["\'][^>]*>'
+        r'<img[^>]+src=["\']([^"\']+\.(?:jpg|jpeg|png|gif|webp))["\'][^>]*>',
+        r'<media:content[^>]+url=["\'][^"\']+["\'][^>]*>',
+        r'<enclosure[^>]+url=["\'][^"\']+["\'][^>]*>'
     ]
+    
     for pattern in img_patterns:
         match = re.search(pattern, html_content, re.IGNORECASE)
         if match:
-            img_url = match.group(1)
-            if img_url.startswith('http') and len(img_url) > 20:
+            img_url = match.group(1) if match.lastindex else match.group(0)
+            if img_url and img_url.startswith('http') and len(img_url) > 20:
                 return img_url
     return None
 
@@ -80,7 +83,7 @@ for url in feeds:
 
 print(f"✅ Fetched {len(news_digest)} news items")
 
-# ✅ FIXED HTML GENERATION (NO MORE CODE SPILLING!)
+# ✅ FIXED HTML GENERATION
 timestamp = date.today().strftime("%d-%m-%Y")
 
 # Build articles HTML first (separate f-string)
@@ -89,10 +92,7 @@ for i, item in enumerate(news_digest, 1):
     # ✅ FIXED IMAGE HANDLING
     image_html = ''
     if item.get("image"):
-        image_html = f'''
-        <img src="{item["image"]}" alt="Space news image" class="card-image" loading="lazy" 
-             onerror="this.style.display='none'">
-        '''
+        image_html = f'<img src="{item["image"]}" alt="Space news image" class="card-image" loading="lazy" onerror="this.style.display=\'none\'">'
     
     articles_html += f'''
         <div class="news-card">
@@ -109,131 +109,43 @@ for i, item in enumerate(news_digest, 1):
     '''
 
 # ✅ Now build complete HTML
-html_body = f"""
-<!DOCTYPE html>
+html_body = f"""<!DOCTYPE html>
 <html>
 <head>
 <style>
 * {{ box-sizing: border-box !important; }}
-html, body {{
-    height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}}
-body {{
-    font-family: Arial, sans-serif !important;
-    max-width: 900px !important;
-    margin: 20px auto !important;
-    background: #f8fafc !important;
-    padding: 25px !important;
-    min-height: 100vh !important;
-    display: flex !important;
-    flex-direction: column !important;
-}}
-.content-wrapper {{
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-}}
-.scroll-container {{
-    flex: 1 !important;
-    max-height: 85vh !important;
-    height: calc(100vh - 220px) !important;
-    width: 100% !important;
-    max-width: 880px !important;
-    margin: 0 auto !important;
-    overflow-y: auto !important;
-    overflow-x: auto !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: #3b82f6 #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    padding: 20px !important;
-    background: #fafbfc !important;
-}}
-.news-card {{
-    display: block !important;
-    width: 100% !important;
-    margin-bottom: 35px !important;
-    padding: 0 !important;
-}}
-.card-content {{
-    background: white !important;
-    border-left: 4px solid #3b82f6 !important;
-    border-radius: 12px !important;
-    padding: 25px !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
-    margin: 0 !important;
-    min-height: 180px !important;
-}}
-.card-image {{
-    width: 100% !important;
-    height: 140px !important;
-    object-fit: cover !important;
-    border-radius: 8px !important;
-    margin-bottom: 18px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-    display: block !important;
-}}
-.card-title {{
-    margin: 0 0 12px 0 !important;
-    font-size: 18px !important;
-    line-height: 1.4 !important;
-}}
-.card-source {{
-    color: #555 !important;
-    margin: 0 0 16px 0 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}}
-.card-summary {{
-    color: #333 !important;
-    line-height: 1.7 !important;
-    margin: 0 0 20px 0 !important;
-    font-size: 15px !important;
-    border-left: 2px solid #e5e7eb !important;
-    padding: 15px !important;
-    background: #f8fafc !important;
-    border-radius: 6px !important;
-}}
-.read-more {{
-    display: inline-block !important;
-    color: #3b82f6 !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    padding: 8px 16px !important;
-    background: #eff6ff !important;
-    border: 1px solid #bfdbfe !important;
-    border-radius: 6px !important;
-}}
+html, body {{ height: 100vh !important; margin: 0 !important; padding: 0 !important; }}
+body {{ font-family: Arial, sans-serif !important; max-width: 900px !important; margin: 20px auto !important; background: #f8fafc !important; padding: 25px !important; min-height: 100vh !important; display: flex !important; flex-direction: column !important; }}
+.content-wrapper {{ flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }}
+.scroll-container {{ flex: 1 !important; max-height: 85vh !important; height: calc(100vh - 220px) !important; width: 100% !important; max-width: 880px !important; margin: 0 auto !important; overflow-y: auto !important; overflow-x: hidden !important; scrollbar-width: thin !important; scrollbar-color: #3b82f6 #f1f5f9 !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 20px !important; background: #fafbfc !important; }}
+.news-card {{ display: block !important; width: 100% !important; margin-bottom: 35px !important; padding: 0 !important; }}
+.card-content {{ background: white !important; border-left: 4px solid #3b82f6 !important; border-radius: 12px !important; padding: 25px !important; box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; margin: 0 !important; min-height: 180px !important; }}
+.card-image {{ width: 100% !important; height: 140px !important; object-fit: cover !important; border-radius: 8px !important; margin-bottom: 18px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; display: block !important; }}
+.card-title {{ margin: 0 0 12px 0 !important; font-size: 18px !important; line-height: 1.4 !important; }}
+.card-source {{ color: #555 !important; margin: 0 0 16px 0 !important; font-size: 14px !important; font-weight: 500 !important; }}
+.card-summary {{ color: #333 !important; line-height: 1.7 !important; margin: 0 0 20px 0 !important; font-size: 15px !important; border-left: 2px solid #e5e7eb !important; padding: 15px !important; background: #f8fafc !important; border-radius: 6px !important; }}
+.read-more {{ display: inline-block !important; color: #3b82f6 !important; font-weight: 600 !important; text-decoration: none !important; padding: 8px 16px !important; background: #eff6ff !important; border: 1px solid #bfdbfe !important; border-radius: 6px !important; }}
 .scroll-spacer {{ height: 60px !important; display: block !important; }}
 .footer {{ margin-top: auto !important; }}
-.scroll-container::-webkit-scrollbar {{ width: 8px !important; height: 12px !important; }}
+.scroll-container::-webkit-scrollbar {{ width: 8px !important; }}
 .scroll-container::-webkit-scrollbar-track {{ background: #f1f5f9 !important; border-radius: 4px !important; }}
 .scroll-container::-webkit-scrollbar-thumb {{ background: #3b82f6 !important; border-radius: 4px !important; }}
-.scroll-container::-webkit-scrollbar-corner {{ background: #f1f5f9 !important; height: 12px !important; }}
 </style>
 </head>
 <body>
 <h2 style='color:#1e3a8a;border-bottom:3px solid #3b82f6;padding-bottom:10px;margin-bottom:25px'>🚀 IIRS - Daily Space News Digest</h2>
 <p style='color:#666;margin-bottom:20px'><i>{timestamp} | {len(news_digest)} Space Tech Updates</i></p>
-
 <div class="content-wrapper">
     <div class="scroll-container">
         {articles_html}
         <div class="scroll-spacer"></div>
     </div>
 </div>
-
 <div class="footer">
-    <p style='text-align:center;color:#888;border-top:1px solid #eee;padding-top:25px'>
-        <small>IIRS Library | Indian Institute of Remote Sensing | Dehradun</small>
-    </p>
+    <p style='text-align:center;color:#888;border-top:1px solid #eee;padding-top:25px'><small>IIRS Library | Indian Institute of Remote Sensing | Dehradun</small></p>
 </div>
 </body>
-</html>
-"""
+</html>"""
 
 # ✅ Save timestamped HTML file
 filename = f'iirs_news_{date.today().strftime("%Y%m%d")}.html'
@@ -241,5 +153,4 @@ with open(filename, 'w', encoding='utf-8') as f:
     f.write(html_body)
 
 print(f"✅ SAVED: {filename} with {len(news_digest)} items")
-#print(f"📁 View at: https://ashshbsht.pythonanywhere.com/files/home/ashshbsht/{filename}")
 print("🎉 Ready for GitHub Actions email!")
