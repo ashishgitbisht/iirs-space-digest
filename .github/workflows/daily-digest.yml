@@ -1,7 +1,7 @@
 name: 🚀 IIRS Daily Space Digest + Gmail
 on:
   schedule:
-    - cron: '30 3 * * *'  # 9AM IST daily
+    - cron: '30 2 * * *'  # 8AM IST daily
   workflow_dispatch:     # Manual button
 
 jobs:
