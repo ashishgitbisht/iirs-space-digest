@@ -1,2 +1,2 @@
 # iirs-space-digest
-Daily ISRO space news automation
+Daily IIRS space news automation
