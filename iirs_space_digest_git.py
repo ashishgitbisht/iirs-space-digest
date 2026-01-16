@@ -37,8 +37,8 @@ def extract_first_image_url(html_content):
         return None
     img_patterns = [
         r'<img[^>]+src=["\']([^"\']+\.(jpg|jpeg|png|gif|webp))["\'][^>]*>',
-        r'<media:content[^>]+url=["\']([^"\\']+)["\'][^>]*>',
-        r'<enclosure[^>]+url=["\']([^"\\']+)["\'][^>]*>'
+        r'<media:content[^>]+url=["\']([^"']+)["\'][^>]*>',
+        r'<enclosure[^>]+url=["\']([^"']+)["\'][^>]*>'
     ]
     for pattern in img_patterns:
         match = re.search(pattern, html_content, re.IGNORECASE)
