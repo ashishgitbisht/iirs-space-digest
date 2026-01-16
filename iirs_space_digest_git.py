@@ -2,6 +2,7 @@
 """
 IIRS Space Digest - PythonAnywhere Production Version
 Daily automated space news for IIRS employees (TODAY'S NEWS ONLY)
+COSMIC VOID THEME - Pure Black Minimalist
 """
 
 import feedparser
@@ -15,7 +16,7 @@ from email import encoders
 import os
 import time
 
-print("🚀 Starting IIRS Daily Space Digest...")
+print("🚀 Starting IIRS Daily Space Digest - COSMIC VOID...")
 
 # Verified working space agency RSS feeds
 feeds = [
@@ -39,14 +40,14 @@ def extract_first_image_url(html_content):
     
     img_patterns = [
         r'<img[^>]+src=["\']([^"\']+\.(?:jpg|jpeg|png|gif|webp))["\'][^>]*>',
-        r'<media:content[^>]+url=["\'][^"\']+["\'][^>]*>',
-        r'<enclosure[^>]+url=["\'][^"\']+["\'][^>]*>'
+        r'<media:content[^>]+url=["\']([^"\']+)["\'][^>]*>',
+        r'<enclosure[^>]+url=["\']([^"\']+)["\'][^>]*>'
     ]
     
     for pattern in img_patterns:
         match = re.search(pattern, html_content, re.IGNORECASE)
         if match:
-            img_url = match.group(1) if match.lastindex else match.group(0)
+            img_url = match.group(1)
             if img_url and img_url.startswith('http') and len(img_url) > 20:
                 return img_url
     return None
@@ -154,7 +155,7 @@ if len(news_digest) == 0:
         except:
             continue
 
-# ✅ FIXED HTML GENERATION
+# ✅ FIXED HTML GENERATION with COSMIC VOID THEME
 timestamp = date.today().strftime("%d-%m-%Y")
 articles_html = ""
 
@@ -168,42 +169,248 @@ for i, item in enumerate(news_digest, 1):
             <div class="card-content">
                 {image_html}
                 <div class="card-title">
-                    <a href="{item['link']}" target="_blank" style="color:#1e40af;text-decoration:none;font-weight:600">{i}. {item['title']}</a>
+                    <a href="{item["link"]}" target="_blank">{i}. {item["title"]}</a>
                 </div>
-                <div class="card-source">{item['source']}</div>
-                <div class="card-summary">{item['summary']}</div>
-                <a href="{item['link']}" target="_blank" class="read-more">Read Full Article →</a>
+                <div class="card-source">{item["source"]}</div>
+                <div class="card-summary">{item["summary"]}</div>
+                <a href="{item["link"]}" target="_blank" class="read-more">Read Full Article →</a>
             </div>
         </div>
     '''
 
-# ✅ Now build complete HTML
+# ✅ COSMIC VOID THEME - Pure Black Minimalist
 html_body = f"""<!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * {{ box-sizing: border-box !important; }}
-html, body {{ height: 100vh !important; margin: 0 !important; padding: 0 !important; }}
-body {{ font-family: Arial, sans-serif !important; max-width: 900px !important; margin: 20px auto !important; background: #f8fafc !important; padding: 25px !important; min-height: 100vh !important; display: flex !important; flex-direction: column !important; }}
-.content-wrapper {{ flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }}
-.scroll-container {{ flex: 1 !important; max-height: 85vh !important; height: calc(100vh - 220px) !important; width: 100% !important; max-width: 880px !important; margin: 0 auto !important; overflow-y: auto !important; overflow-x: hidden !important; scrollbar-width: thin !important; scrollbar-color: #3b82f6 #f1f5f9 !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 20px !important; background: #fafbfc !important; }}
-.news-card {{ display: block !important; width: 100% !important; margin-bottom: 35px !important; padding: 0 !important; }}
-.card-content {{ background: white !important; border-left: 4px solid #3b82f6 !important; border-radius: 12px !important; padding: 25px !important; box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; margin: 0 !important; min-height: 180px !important; }}
-.card-image {{ width: 100% !important; height: 140px !important; object-fit: cover !important; border-radius: 8px !important; margin-bottom: 18px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; display: block !important; }}
-.card-title {{ margin: 0 0 12px 0 !important; font-size: 18px !important; line-height: 1.4 !important; }}
-.card-source {{ color: #555 !important; margin: 0 0 16px 0 !important; font-size: 14px !important; font-weight: 500 !important; }}
-.card-summary {{ color: #333 !important; line-height: 1.7 !important; margin: 0 0 20px 0 !important; font-size: 15px !important; border-left: 2px solid #e5e7eb !important; padding: 15px !important; background: #f8fafc !important; border-radius: 6px !important; }}
-.read-more {{ display: inline-block !important; color: #3b82f6 !important; font-weight: 600 !important; text-decoration: none !important; padding: 8px 16px !important; background: #eff6ff !important; border: 1px solid #bfdbfe !important; border-radius: 6px !important; }}
+html, body {{ 
+    height: 100vh !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+}}
+body {{ 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    max-width: 900px !important; 
+    margin: 20px auto !important; 
+    /* 🌌 COSMIC VOID BACKGROUND */
+    background: #0a0a0a !important;
+    padding: 25px !important; 
+    min-height: 100vh !important; 
+    display: flex !important; 
+    flex-direction: column !important;
+    position: relative !important;
+    overflow-x: hidden !important;
+}}
+/* ✨ ULTRA-FAINT STARFIELD */
+body::before {{
+    content: '' !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-image: 
+        radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(0.5px 0.5px at 40px 70px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(0.8px 0.8px at 90px 40px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(0.3px 0.3px at 130px 80px, rgba(255,255,255,0.1), transparent),
+        radial-gradient(1px 1px at 160px 30px, rgba(255,255,255,0.25), transparent);
+    background-repeat: repeat !important;
+    background-size: 300px 150px !important;
+    animation: voidDrift 40s linear infinite !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+}}
+@keyframes voidDrift {{
+    0% {{ transform: translateX(0) translateY(0); opacity: 0.6; }}
+    100% {{ transform: translateX(-300px) translateY(-150px); opacity: 0.4; }}
+}}
+.content-wrapper {{ 
+    flex: 1 !important; 
+    display: flex !important; 
+    flex-direction: column !important; 
+    min-height: 0 !important;
+    position: relative !important;
+    z-index: 10 !important;
+}}
+.scroll-container {{ 
+    flex: 1 !important; 
+    max-height: 85vh !important; 
+    height: calc(100vh - 220px) !important; 
+    width: 100% !important;
+    max-width: 880px !important; 
+    margin: 0 auto !important; 
+    overflow-y: auto !important; 
+    overflow-x: hidden !important; 
+    scrollbar-width: thin !important; 
+    scrollbar-color: #c0c0c0 rgba(10,10,10,0.9) !important;
+    /* 🌌 EXTREME GLASS CONTAINER */
+    background: rgba(10, 10, 10, 0.9) !important;
+    backdrop-filter: blur(30px) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important; 
+    padding: 35px !important;
+    box-shadow: 
+        0 35px 70px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(255,255,255,0.05) !important;
+}}
+.news-card {{ 
+    display: block !important; 
+    width: 100% !important; 
+    margin-bottom: 45px !important; 
+    padding: 0 !important; 
+}}
+.card-content {{ 
+    /* 🌌 EXTREME GLASSMORPHISM */
+    background: rgba(255,255,255,0.05) !important;
+    backdrop-filter: blur(25px) saturate(1.3) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-left: 3px solid transparent !important;
+    background-clip: padding-box !important;
+    border-radius: 24px !important; 
+    padding: 35px !important; 
+    box-shadow: 
+        0 25px 60px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.03) !important;
+    margin: 0 !important; 
+    min-height: 220px !important;
+    position: relative !important;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}}
+.card-content:hover {{
+    border-left-color: #00ffff !important;
+    box-shadow: 
+        0 35px 80px rgba(0,255,255,0.15),
+        0 0 0 1px rgba(0,255,255,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    transform: translateY(-5px) !important;
+}}
+.card-image {{ 
+    width: 100% !important; 
+    height: 180px !important; 
+    object-fit: cover !important; 
+    border-radius: 20px !important;
+    margin-bottom: 25px !important; 
+    box-shadow: 
+        0 15px 40px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    display: block !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+}}
+.card-title {{ 
+    margin: 0 0 18px 0 !important; 
+    font-size: 22px !important; 
+    line-height: 1.4 !important;
+}}
+.card-title a {{ 
+    color: #c0c0c0 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}}
+.card-title a:hover {{ 
+    color: #ffffff !important;
+    text-shadow: 0 0 15px rgba(0,255,255,0.4) !important;
+}}
+.card-source {{ 
+    color: #a0a0a0 !important; 
+    margin: 0 0 22px 0 !important; 
+    font-size: 14px !important; 
+    font-weight: 500 !important;
+    background: rgba(255,255,255,0.04) !important;
+    padding: 8px 18px !important;
+    border-radius: 25px !important;
+    display: inline-block !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}}
+.card-summary {{ 
+    color: #d0d0d0 !important; 
+    line-height: 1.8 !important; 
+    margin: 0 0 30px 0 !important; 
+    font-size: 16px !important; 
+    border-left: 2px solid transparent !important;
+    padding: 25px !important;
+    background: rgba(255,255,255,0.02) !important;
+    border-radius: 16px !important;
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.3) !important;
+}}
+.card-summary:hover {{
+    border-left-color: #00ffff !important;
+}}
+.read-more {{ 
+    display: inline-block !important;
+    color: #c0c0c0 !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    padding: 14px 28px !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    border-radius: 30px !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5) !important;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}}
+.read-more:hover {{ 
+    color: #ffffff !important;
+    background: rgba(0,255,255,0.1) !important;
+    border-color: #00ffff !important;
+    box-shadow: 
+        0 10px 30px rgba(0,255,255,0.2),
+        0 0 25px rgba(0,255,255,0.3) !important;
+    transform: translateY(-2px) !important;
+}}
 .scroll-spacer {{ height: 60px !important; display: block !important; }}
-.footer {{ margin-top: auto !important; }}
+.footer {{ 
+    margin-top: auto !important; 
+    color: rgba(192,192,192,0.7) !important;
+    text-align: center !important;
+    padding: 30px !important;
+    font-size: 14px !important;
+}}
+/* 🌌 MINIMAL SCROLLBARS */
 .scroll-container::-webkit-scrollbar {{ width: 8px !important; }}
-.scroll-container::-webkit-scrollbar-track {{ background: #f1f5f9 !important; border-radius: 4px !important; }}
-.scroll-container::-webkit-scrollbar-thumb {{ background: #3b82f6 !important; border-radius: 4px !important; }}
+.scroll-container::-webkit-scrollbar-track {{ 
+    background: rgba(10,10,10,0.9) !important; 
+    border-radius: 4px !important; 
+}}
+.scroll-container::-webkit-scrollbar-thumb {{ 
+    background: linear-gradient(180deg, #c0c0c0, #ffffff) !important; 
+    border-radius: 4px !important;
+    opacity: 0.6 !important;
+}}
+.scroll-container::-webkit-scrollbar-thumb:hover {{ 
+    background: linear-gradient(180deg, #00ffff, #c0c0c0) !important;
+    opacity: 1 !important;
+}}
+h2 {{ 
+    color: #c0c0c0 !important;
+    text-align: center !important;
+    border-bottom: 2px solid rgba(255,255,255,0.2) !important;
+    padding-bottom: 25px !important;
+    margin-bottom: 35px !important;
+    font-weight: 700 !important;
+    font-size: 28px !important;
+    letter-spacing: 2px !important;
+}}
+h2:hover {{
+    color: #ffffff !important;
+    text-shadow: 0 0 20px rgba(0,255,255,0.3) !important;
+}}
+@media screen and (max-width: 600px) {{
+    .scroll-container {{ padding: 25px !important; }}
+    .card-content {{ padding: 30px !important; }}
+    h2 {{ font-size: 24px !important; }}
+}}
 </style>
 </head>
 <body>
-<h2 style='color:#1e3a8a;border-bottom:3px solid #3b82f6;padding-bottom:10px;margin-bottom:25px'>🚀 IIRS - Daily Space News Digest</h2>
-<p style='color:#666;margin-bottom:20px'><i>{timestamp} | {len(news_digest)} Space Tech Updates</i></p>
+<h2>🌌 IIRS - Daily Space News Digest</h2>
+<p style='color:rgba(192,192,192,0.9);margin-bottom:30px;text-align:center;font-style:italic;font-size:16px;font-weight:400;letter-spacing:1px'><i>{timestamp} | {len(news_digest)} Space Tech Updates</i></p>
 <div class="content-wrapper">
     <div class="scroll-container">
         {articles_html}
@@ -211,15 +418,24 @@ body {{ font-family: Arial, sans-serif !important; max-width: 900px !important; 
     </div>
 </div>
 <div class="footer">
-    <p style='text-align:center;color:#888;border-top:1px solid #eee;padding-top:25px'><small>IIRS Library | Indian Institute of Remote Sensing | Dehradun</small></p>
+    <p style='margin:0'>
+        <small>IIRS Library | Indian Institute of Remote Sensing | Dehradun</small>
+    </p>
 </div>
 </body>
 </html>"""
 
 # ✅ Save timestamped HTML file
-filename = f'iirs_news_{date.today().strftime("%Y%m%d")}.html'
+filename = f'iirs_news_void_{date.today().strftime("%Y%m%d")}.html'
 with open(filename, 'w', encoding='utf-8') as f:
     f.write(html_body)
 
-print(f"✅ SAVED: {filename} with {len(news_digest)} items")
+print(f"✅ SAVED: {filename} with {len(news_digest)} items (COSMIC VOID 🌌)")
 print("🎉 Ready for GitHub Actions email!")
+print("🌌 COSMIC VOID FEATURES:")
+print("   • Pure #0a0a0a void background")
+print("   • Ultra-faint white star drift")
+print("   • Extreme glassmorphism (rgba(255,255,255,0.05))")
+print("   • Silver → white gradient accents")
+print("   • Subtle cyan pulse hovers")
+print("   • Perfect minimalist mission control aesthetic!")
