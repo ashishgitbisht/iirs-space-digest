@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {{
 </body>
 </html>"""
 
-filename = f'iirs_news_void_75pct_fixed_light_{date.today().strftime("%Y%m%d")}.html'
+filename = f'IIRS_SpaceNews_Digest{date.today().strftime("%Y%m%d")}.html'
 with open(filename, 'w', encoding='utf-8') as f:
     f.write(html_body)
 
