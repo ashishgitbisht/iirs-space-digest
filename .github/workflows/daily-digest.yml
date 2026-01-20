@@ -31,4 +31,4 @@ jobs:
         subject: '🚀 IIRS Daily Space Digest | ${{ github.run_id }}'
         to: ${{ secrets.GMAIL_USER }},${{ secrets.GMAIL_USER2 }}
         from: 'IIRS Library <${{ secrets.GMAIL_USER }}>'
-        attachments: 'iirs_news_*.html'
+        attachments: 'IIRS_SpaceNews_Daily_*.html'
