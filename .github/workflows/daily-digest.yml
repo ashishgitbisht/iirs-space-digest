@@ -29,6 +29,6 @@ jobs:
         username: ${{ secrets.GMAIL_USER }}
         password: ${{ secrets.GMAIL_PASS }}
         subject: '🚀 IIRS Daily Space Digest | ${{ github.run_id }}'
-        to: ${{ secrets.GMAIL_USER }},${{ secrets.GMAIL_USER2 }}
+        to: ${{ secrets.GMAIL_USER }},${{ secrets.GMAIL_USER2 }},${{ secrets.GMAIL_USER3 }}
         from: 'IIRS Library <${{ secrets.GMAIL_USER }}>'
         attachments: 'IIRS_SpaceNews_Daily_*.html'
