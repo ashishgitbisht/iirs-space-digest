@@ -18,17 +18,39 @@ import time
 
 print("🚀 Starting IIRS Daily Space Digest - COSMIC VOID 75% + 3 TABS...")
 
-# 🏔️ Regional (you can adjust feeds later)
+# 🏔️ Regional Keywords (Uttarakhand/Dehradun focus: space, remote sensing, local ISRO)
+REGIONAL_KEYWORDS = r'(?i)(space|satellite|remote sensing|gis|iirs|rrsc|nrsc|earth observation|glacier|landslide|cloudburst|disaster|floods|avalanche|earthquake|seismic|hyperspectral|pollution|air quality index| AQI |snowfall)'
+
+NATIONAL_KEYWORDS = r'(?i)(isro|nrsc|nsil|chandrayaan| IIST |gaganyaan|pslv|glsv|lvm3|spadex|gsat|insat|resourcesat|cartosat|risat|launch|rocket|spacecraft|astronaut|shukrayaan|aditya|spaceport|sriharikota|indian space|vyommitra|eos|pslv-c62|axiom|nesac|nsss|sslv|nvs|hlvm3|om1)'
+
+
+# 🌌 International Keywords (global space agencies, missions)
+INTERNATIONAL_KEYWORDS = r'(?i)(nasa|esa|jaxa|cnsa|roscosmos|spacex|blue origin|artemis|starship|crew dragon|iss|international space station|hubble|james webb|mars rover|perseverance|insight|booster|orbital|launch|spacecraft|astronaut|spacewalk|satellite|mission|space agency)'
+
+
+
 REGIONAL_FEEDS = [
-    'https://khabardevbhoomi.com/feed/',
-    'https://www.amarujala.com/rss/uttarakhand.rss',
+    'https://www.amarujala.com/rss/uttarakhand.rss',  # Current, good volume
+    'https://khabardevbhoomi.com/feed/',              # Current
+    'https://devbhoomimedia.com/feed',                # Dehradun-heavy Uttarakhand news [web:56]
+    'https://pioneeredge.in/feed',                    # Pioneer Edge Dehradun edition [web:60]
+    'https://www.livehindustan.com/uttarakhand/rss',  # Hindustan Uttarakhand (check exact)
+   
+    'https://timesofindia.indiatimes.com/city/delhi/rssfeeds/1311474.cms',     # TOI Delhi
+    'https://indianexpress.com/section/cities/delhi/feed/',                     # IE Delhi
+    'https://www.hindustantimes.com/cities/delhi-news/rssfeed/',                # HT Delhi
 ]
 
-# 🇮🇳 National
+
 NATIONAL_FEEDS = [
-    'https://timesofindia.indiatimes.com/rssfeeds/1898055.cms',  # TOI Science
-    'https://indianexpress.com/section/science/feed/',
+    'https://timesofindia.indiatimes.com/rssfeeds/1201659.cms',  # TOI Science & Tech (correct)
+    'https://indianexpress.com/section/science/feed/',           # IE Science
+    'https://www.thehindu.com/sci-tech/science/rssfeed/',       # The Hindu Science
+    'https://www.thehindu.com/news/national/rssfeed/',          # Hindu National (ISRO-heavy)
+    'https://www.isro.gov.in/rssnews.xml'                       # Pure ISRO
 ]
+
+
 
 # 🌌 International (your original list reused)
 INTERNATIONAL_FEEDS = [
@@ -46,7 +68,7 @@ INTERNATIONAL_FEEDS = [
 ]
 
 def extract_first_image_url(html_content):
-    if not html_content: 
+    if not html_content:
         return None
     img_patterns = [
         r'<img[^>]+src=["\']([^"\']+\.(?:jpg|jpeg|png|gif|webp))["\'][^>]*>',
@@ -62,16 +84,16 @@ def extract_first_image_url(html_content):
     return None
 
 def sanitize_html_content(text):
-    if not text: 
+    if not text:
         return ''
     text = re.sub(r'<[^>]+>', '', text)
     text = re.sub(r'\s+', ' ', text)
     return text[:380] + '...' if len(text) > 380 else text.strip()
 
-def is_today_or_yesterday(entry):
+def is_today_only(entry):
     today = date.today()
-    yesterday = today - timedelta(days=1)
-    for date_field in ['published_parsed', 'updated_parsed']:
+    # Check parsed fields first (most reliable)
+    for date_field in ['published_parsed', 'updated_parsed', 'created_parsed']:
         if date_field in entry and entry[date_field]:
             try:
                 entry_date = date(
@@ -79,19 +101,21 @@ def is_today_or_yesterday(entry):
                     entry[date_field].tm_mon,
                     entry[date_field].tm_mday
                 )
-                return entry_date == today or entry_date == yesterday
+                return entry_date == today  # STRICT today only
             except:
                 continue
+    # Fallback: string parsing
     for date_str in [entry.get('published'), entry.get('updated'), entry.get('created')]:
         if date_str:
             try:
                 entry_time = time.strptime(date_str[:10], '%Y-%m-%d')
                 entry_date = date(entry_time.tm_year, entry_time.tm_mon, entry_time.tm_mday)
-                if entry_date == today or entry_date == yesterday:
+                if entry_date == today:  # STRICT today only
                     return True
             except:
                 continue
     return False
+
 
 def fetch_news_from_feeds(feeds, max_articles=6):
     news = []
@@ -100,7 +124,24 @@ def fetch_news_from_feeds(feeds, max_articles=6):
             feed = feedparser.parse(url)
             print(f"📱 {feed.feed.get('title', 'Unknown')} - checking...")
             for entry in feed.entries[:10]:
-                if is_today_or_yesterday(entry):
+                if is_today_only(entry):  # Change to is_today_only(entry) for strict today
+                    title_lower = entry.title.lower()
+                    summary_lower = (entry.get('summary', '') or entry.get('description', '')).lower()
+
+                    # Filter by level-specific keywords (simplified)
+                    if url in REGIONAL_FEEDS:
+                        keyword_pattern = REGIONAL_KEYWORDS
+                    elif url in NATIONAL_FEEDS:
+                        keyword_pattern = NATIONAL_KEYWORDS
+                    else:  # INTERNATIONAL_FEEDS
+                        keyword_pattern = INTERNATIONAL_KEYWORDS
+
+                    # if not re.search(keyword_pattern, f"{title_lower}"):
+                    #     continue  # Skip non-relevant news
+
+                    if not re.search(keyword_pattern, f"{title_lower} {summary_lower}"):
+                        continue  # Skip non-relevant news
+
                     raw_summary = entry.get('summary', '') or entry.get('description', '')
                     image_url = extract_first_image_url(raw_summary)
                     summary = sanitize_html_content(raw_summary)
@@ -113,38 +154,55 @@ def fetch_news_from_feeds(feeds, max_articles=6):
                         'image': image_url
                     })
                     print(f"✅ TODAY: {title[:60]}...")
+
                     if len(news) >= max_articles:
                         break
+
             if len(news) >= max_articles:
                 break
         except Exception as e:
             print(f"⚠️ Skip {url}: {e}")
     return news
 
-def fallback_if_empty(news_list, feeds, fallback_max=4):
+def fallback_if_empty(news_list, feeds, fallback_max=2):  # Reduced
     if len(news_list) == 0:
-        print("⚠️ No today's news found - using recent articles...")
-        for url in feeds[:3]:
+        print("⚠️ No today's news - fallback with date/keyword filter...")
+        for url in feeds[:2]:  # Fewer sources
             try:
                 feed = feedparser.parse(url)
-                for entry in feed.entries[:2]:
+                for entry in feed.entries[:5]:  # Check more but filter
+                    if not is_today_only(entry):  # ← ADD DATE CHECK
+                        continue
+                    title_lower = (entry.title or '').lower()
+                    # ← ADD KEYWORD CHECK (match fetch_news_from_feeds)
+                    if url in REGIONAL_FEEDS:
+                        keyword_pattern = REGIONAL_KEYWORDS
+                    elif url in NATIONAL_FEEDS:
+                        keyword_pattern = NATIONAL_KEYWORDS
+                    else:
+                        keyword_pattern = INTERNATIONAL_KEYWORDS
+                    if not re.search(keyword_pattern, title_lower):
+                        continue
+
                     raw_summary = entry.get('summary', '') or entry.get('description', '')
                     image_url = extract_first_image_url(raw_summary)
                     summary = sanitize_html_content(raw_summary)
-                    title = re.sub(r'<[^>]+>', '', entry.title)
+                    title = re.sub(r'<[^>]+>', '', entry.title or '')
                     news_list.append({
-                        'title': title,
-                        'link': entry.link,
+                        'title': title, 'link': entry.link,
                         'source': feed.feed.get('title', 'Space News')[:20] + '...',
-                        'summary': summary,
-                        'image': image_url
+                        'summary': summary, 'image': image_url
                     })
+                    print(f"✅ FALLBACK TODAY: {title[:60]}...")
                     if len(news_list) >= fallback_max:
                         break
                 if len(news_list) >= fallback_max:
                     break
             except:
                 continue
+        if len(news_list) == 0:
+            news_list.append({'title': 'No space news today', 'link': '', 'source': 'IIRS Digest', 'summary': 'Check tomorrow for updates!', 'image': None})
+
 
 print("🏔️ Fetching REGIONAL...")
 regional_news = fetch_news_from_feeds(REGIONAL_FEEDS, max_articles=5)
