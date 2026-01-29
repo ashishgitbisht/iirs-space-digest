@@ -22,16 +22,20 @@ jobs:
       run: pip install feedparser
       
     - name: Generate HTML Newsletter
-      # Ensure your python script saves file as 'index.html' for this to work best!
       run: python iirs_space_digest_git.py
+      
+    - name: 📋 Copy to index.html for hosting
+      run: |
+        cp IIRS_SpaceNews_Daily_*.html index.html
+        echo "✅ Copied $(ls IIRS_SpaceNews_Daily_*.html) to index.html"
       
     - name: 🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./
-        publish_branch: gh-pages  # Deploys 'index.html' to this branch
-        keep_files: true
+        publish_branch: gh-pages
+        keep_files: false  # Set to true if you want to keep past days' files
         
     - name: ✅ Send Link to Gmail
       uses: dawidd6/action-send-mail@v3
@@ -40,18 +44,19 @@ jobs:
         server_port: 465
         username: ${{ secrets.GMAIL_USER }}
         password: ${{ secrets.GMAIL_PASS }}
-        subject: '🚀 IIRS Space Digest Link | ${{ github.run_id }}'
-        # EMAIL BODY WITH LINK
+        subject: '🚀 IIRS Space Digest - ${{ github.run_number }}'
         body: |
-          Today's space digest is ready!
+          📡 Today's IIRS Space Digest is LIVE!
           
-          🔗 READ ONLINE (Share this link):
+          🔗 READ & SHARE:
           https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
           
-          (This link works on mobile & desktop immediately)
+          (Click link → Opens in browser on any device)
           
-          Generated: ${{ steps.date.outputs.date }}
+          ────────────────────────────
+          Copy this link and forward to IIRS team via office email.
+          No attachments needed - just the link!
         to: ${{ secrets.GMAIL_USER }},${{ secrets.GMAIL_USER2 }},${{ secrets.GMAIL_USER3 }}
         from: 'IIRS Library <${{ secrets.GMAIL_USER }}>'
-        # Optional: Keep attachment if you still want the file too
-        attachments: 'index.html'
+        # Optional: Attach original dated file as backup
+        attachments: 'IIRS_SpaceNews_Daily_*.html'
