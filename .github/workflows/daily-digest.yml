@@ -58,5 +58,4 @@ jobs:
           No attachments needed - just the link!
         to: ${{ secrets.GMAIL_USER }},${{ secrets.GMAIL_USER2 }},${{ secrets.GMAIL_USER3 }}
         from: 'IIRS Library <${{ secrets.GMAIL_USER }}>'
-        # Optional: Attach original dated file as backup
-        attachments: 'IIRS_SpaceNews_Daily_*.html'
+        # Attachment line removed below
