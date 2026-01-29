@@ -213,7 +213,7 @@ def make_articles_html(news_list):
             <div class="news-card">
                 <div class="card-content">
                     {image_html}
-                    <div class="card-category" style="color:var(--cyan-accent);font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;font-size:12px">{item.get("category", "")}</div>
+                    <!-- Category label removed here -->
                     <div class="card-title">
                         <a href="{item["link"]}" target="_blank">{i}. {item["title"]}</a>
                     </div>
