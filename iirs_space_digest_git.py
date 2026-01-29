@@ -2,7 +2,7 @@
 """
 IIRS Space Digest - PythonAnywhere Production Version
 Daily automated space news for IIRS employees (TODAY'S NEWS ONLY)
-COSMIC VOID THEME - 75% WIDTH + NIGHT MODE DEFAULT + 3-TAB LAYOUT
+COSMIC VOID THEME - 80% WIDTH + SINGLE SCROLL (NO TABS) + TITLE FILTER
 """
 
 import feedparser
@@ -16,43 +16,36 @@ from email import encoders
 import os
 import time
 
-print("🚀 Starting IIRS Daily Space Digest - COSMIC VOID 75% + 3 TABS...")
+print("🚀 Starting IIRS Daily Space Digest - SINGLE PAGE...")
 
-# 🏔️ Regional Keywords (Uttarakhand/Dehradun focus: space, remote sensing, local ISRO)
+# 🏔️ Regional Keywords (Uttarakhand/Dehradun focus)
 REGIONAL_KEYWORDS = r'(?i)(space|satellite|remote sensing|gis|iirs|rrsc|nrsc|earth observation|glacier|landslide|cloudburst|disaster|floods|avalanche|earthquake|seismic|hyperspectral|pollution|air quality index| AQI |snowfall)'
 
+# 🇮🇳 National Keywords (ISRO focus)
 NATIONAL_KEYWORDS = r'(?i)(isro|nrsc|nsil|chandrayaan| IIST |gaganyaan|pslv|glsv|lvm3|spadex|gsat|insat|resourcesat|cartosat|risat|launch|rocket|spacecraft|astronaut|shukrayaan|aditya|spaceport|sriharikota|indian space|vyommitra|eos|pslv-c62|axiom|nesac|nsss|sslv|nvs|hlvm3|om1)'
 
-
-# 🌌 International Keywords (global space agencies, missions)
+# 🌌 International Keywords
 INTERNATIONAL_KEYWORDS = r'(?i)(nasa|esa|jaxa|cnsa|roscosmos|spacex|blue origin|artemis|starship|crew dragon|iss|international space station|hubble|james webb|mars rover|perseverance|insight|booster|orbital|launch|spacecraft|astronaut|spacewalk|satellite|mission|space agency)'
 
-
-
 REGIONAL_FEEDS = [
-    'https://www.amarujala.com/rss/uttarakhand.rss',  # Current, good volume
-    'https://khabardevbhoomi.com/feed/',              # Current
-    'https://devbhoomimedia.com/feed',                # Dehradun-heavy Uttarakhand news [web:56]
-    'https://pioneeredge.in/feed',                    # Pioneer Edge Dehradun edition [web:60]
-    'https://www.livehindustan.com/uttarakhand/rss',  # Hindustan Uttarakhand (check exact)
-   
-    'https://timesofindia.indiatimes.com/city/delhi/rssfeeds/1311474.cms',     # TOI Delhi
-    'https://indianexpress.com/section/cities/delhi/feed/',                     # IE Delhi
-    'https://www.hindustantimes.com/cities/delhi-news/rssfeed/',                # HT Delhi
+    'https://www.amarujala.com/rss/uttarakhand.rss',
+    'https://khabardevbhoomi.com/feed/',
+    'https://devbhoomimedia.com/feed',
+    'https://pioneeredge.in/feed',
+    'https://www.livehindustan.com/uttarakhand/rss',
+    'https://timesofindia.indiatimes.com/city/delhi/rssfeeds/1311474.cms',
+    'https://indianexpress.com/section/cities/delhi/feed/',
+    'https://www.hindustantimes.com/cities/delhi-news/rssfeed/',
 ]
-
 
 NATIONAL_FEEDS = [
-    'https://timesofindia.indiatimes.com/rssfeeds/1201659.cms',  # TOI Science & Tech (correct)
-    'https://indianexpress.com/section/science/feed/',           # IE Science
-    'https://www.thehindu.com/sci-tech/science/rssfeed/',       # The Hindu Science
-    'https://www.thehindu.com/news/national/rssfeed/',          # Hindu National (ISRO-heavy)
-    'https://www.isro.gov.in/rssnews.xml'                       # Pure ISRO
+    'https://timesofindia.indiatimes.com/rssfeeds/1201659.cms',
+    'https://indianexpress.com/section/science/feed/',
+    'https://www.thehindu.com/sci-tech/science/rssfeed/',
+    'https://www.thehindu.com/news/national/rssfeed/',
+    'https://www.isro.gov.in/rssnews.xml'
 ]
 
-
-
-# 🌌 International (your original list reused)
 INTERNATIONAL_FEEDS = [
     'https://www.esa.int/rss/rss-topnews.xml',
     'https://www.esa.int/rss/programmes.xml',
@@ -92,30 +85,23 @@ def sanitize_html_content(text):
 
 def is_today_only(entry):
     today = date.today()
-    # Check parsed fields first (most reliable)
     for date_field in ['published_parsed', 'updated_parsed', 'created_parsed']:
         if date_field in entry and entry[date_field]:
             try:
-                entry_date = date(
-                    entry[date_field].tm_year,
-                    entry[date_field].tm_mon,
-                    entry[date_field].tm_mday
-                )
-                return entry_date == today  # STRICT today only
+                entry_date = date(entry[date_field].tm_year, entry[date_field].tm_mon, entry[date_field].tm_mday)
+                return entry_date == today
             except:
                 continue
-    # Fallback: string parsing
     for date_str in [entry.get('published'), entry.get('updated'), entry.get('created')]:
         if date_str:
             try:
                 entry_time = time.strptime(date_str[:10], '%Y-%m-%d')
                 entry_date = date(entry_time.tm_year, entry_time.tm_mon, entry_time.tm_mday)
-                if entry_date == today:  # STRICT today only
+                if entry_date == today:
                     return True
             except:
                 continue
     return False
-
 
 def fetch_news_from_feeds(feeds, max_articles=6):
     news = []
@@ -124,23 +110,19 @@ def fetch_news_from_feeds(feeds, max_articles=6):
             feed = feedparser.parse(url)
             print(f"📱 {feed.feed.get('title', 'Unknown')} - checking...")
             for entry in feed.entries[:10]:
-                if is_today_only(entry):  # Change to is_today_only(entry) for strict today
+                if is_today_only(entry):
                     title_lower = entry.title.lower()
-                    summary_lower = (entry.get('summary', '') or entry.get('description', '')).lower()
-
-                    # Filter by level-specific keywords (simplified)
+                    
                     if url in REGIONAL_FEEDS:
                         keyword_pattern = REGIONAL_KEYWORDS
                     elif url in NATIONAL_FEEDS:
                         keyword_pattern = NATIONAL_KEYWORDS
-                    else:  # INTERNATIONAL_FEEDS
+                    else:
                         keyword_pattern = INTERNATIONAL_KEYWORDS
 
-                    # if not re.search(keyword_pattern, f"{title_lower}"):
-                    #     continue  # Skip non-relevant news
-
-                    if not re.search(keyword_pattern, f"{title_lower} {summary_lower}"):
-                        continue  # Skip non-relevant news
+                    # Title-only filter for reliability
+                    if not re.search(keyword_pattern, title_lower):
+                        continue
 
                     raw_summary = entry.get('summary', '') or entry.get('description', '')
                     image_url = extract_first_image_url(raw_summary)
@@ -154,35 +136,26 @@ def fetch_news_from_feeds(feeds, max_articles=6):
                         'image': image_url
                     })
                     print(f"✅ TODAY: {title[:60]}...")
-
-                    if len(news) >= max_articles:
-                        break
-
-            if len(news) >= max_articles:
-                break
+                    if len(news) >= max_articles: break
+            if len(news) >= max_articles: break
         except Exception as e:
             print(f"⚠️ Skip {url}: {e}")
     return news
 
-def fallback_if_empty(news_list, feeds, fallback_max=2):  # Reduced
+def fallback_if_empty(news_list, feeds, fallback_max=2):
     if len(news_list) == 0:
-        print("⚠️ No today's news - fallback with date/keyword filter...")
-        for url in feeds[:2]:  # Fewer sources
+        print("⚠️ No today's news - fallback...")
+        for url in feeds[:2]:
             try:
                 feed = feedparser.parse(url)
-                for entry in feed.entries[:5]:  # Check more but filter
-                    if not is_today_only(entry):  # ← ADD DATE CHECK
-                        continue
+                for entry in feed.entries[:5]:
+                    if not is_today_only(entry): continue
                     title_lower = (entry.title or '').lower()
-                    # ← ADD KEYWORD CHECK (match fetch_news_from_feeds)
-                    if url in REGIONAL_FEEDS:
-                        keyword_pattern = REGIONAL_KEYWORDS
-                    elif url in NATIONAL_FEEDS:
-                        keyword_pattern = NATIONAL_KEYWORDS
-                    else:
-                        keyword_pattern = INTERNATIONAL_KEYWORDS
-                    if not re.search(keyword_pattern, title_lower):
-                        continue
+                    if url in REGIONAL_FEEDS: keyword_pattern = REGIONAL_KEYWORDS
+                    elif url in NATIONAL_FEEDS: keyword_pattern = NATIONAL_KEYWORDS
+                    else: keyword_pattern = INTERNATIONAL_KEYWORDS
+                    
+                    if not re.search(keyword_pattern, title_lower): continue
 
                     raw_summary = entry.get('summary', '') or entry.get('description', '')
                     image_url = extract_first_image_url(raw_summary)
@@ -193,16 +166,11 @@ def fallback_if_empty(news_list, feeds, fallback_max=2):  # Reduced
                         'source': feed.feed.get('title', 'Space News')[:20] + '...',
                         'summary': summary, 'image': image_url
                     })
-                    print(f"✅ FALLBACK TODAY: {title[:60]}...")
-                    if len(news_list) >= fallback_max:
-                        break
-                if len(news_list) >= fallback_max:
-                    break
-            except:
-                continue
+                    if len(news_list) >= fallback_max: break
+                if len(news_list) >= fallback_max: break
+            except: continue
         if len(news_list) == 0:
-            news_list.append({'title': 'No space news today', 'link': '', 'source': 'IIRS Digest', 'summary': 'Check tomorrow for updates!', 'image': None})
-
+            news_list.append({'title': 'No space news today', 'link': '#', 'source': 'IIRS Digest', 'summary': 'Check tomorrow for updates!', 'image': None})
 
 print("🏔️ Fetching REGIONAL...")
 regional_news = fetch_news_from_feeds(REGIONAL_FEEDS, max_articles=5)
@@ -215,6 +183,21 @@ fallback_if_empty(national_news, NATIONAL_FEEDS)
 print("🌌 Fetching INTERNATIONAL...")
 international_news = fetch_news_from_feeds(INTERNATIONAL_FEEDS, max_articles=8)
 fallback_if_empty(international_news, INTERNATIONAL_FEEDS)
+
+# Combine ALL news into single list with labels
+all_news = []
+for news_list, category in [
+    (regional_news, "🏔️ Regional Updates"), 
+    (national_news, "🇮🇳 National Updates"), 
+    (international_news, "🌌 International Updates")
+]:
+    for item in news_list:
+        if item['title'] != 'No space news today': # Skip placeholders if others exist
+             item['category'] = category
+             all_news.append(item)
+# Ensure at least one placeholder if completely empty
+if not all_news:
+    all_news.append({'title': 'No space news today', 'link': '#', 'source': 'IIRS Digest', 'summary': 'Check back tomorrow!', 'image': None, 'category': 'System'})
 
 def make_articles_html(news_list):
     html = ""
@@ -230,6 +213,7 @@ def make_articles_html(news_list):
             <div class="news-card">
                 <div class="card-content">
                     {image_html}
+                    <div class="card-category" style="color:var(--cyan-accent);font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;font-size:12px">{item.get("category", "")}</div>
                     <div class="card-title">
                         <a href="{item["link"]}" target="_blank">{i}. {item["title"]}</a>
                     </div>
@@ -241,10 +225,7 @@ def make_articles_html(news_list):
         '''
     return html
 
-regional_html = make_articles_html(regional_news)
-national_html = make_articles_html(national_news)
-international_html = make_articles_html(international_news)
-
+all_articles_html = make_articles_html(all_news)
 timestamp = date.today().strftime("%d-%m-%Y")
 
 html_body = f"""<!DOCTYPE html>
@@ -253,9 +234,6 @@ html_body = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-/* (ALL your existing CSS from :root down to media queries kept exactly the same) */
-/* Only additions: .tabs-container, .tab-labels, .tab-content selector blocks */
-
 :root {{
     --bg-primary: #0a0a0a;
     --bg-secondary: rgba(10, 10, 10, 0.9);
@@ -286,391 +264,171 @@ html_body = f"""<!DOCTYPE html>
 }}
 
 * {{ box-sizing: border-box !important; }}
-html {{
-    background: var(--bg-primary) !important;
-    min-height: 100vh !important;
-}}
-html, body {{
-    height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transition: all 0.3s ease !important;
-}}
+html {{ background: var(--bg-primary) !important; min-height: 100vh !important; }}
 body {{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    max-width: 95vw !important;
-    margin: 20px auto !important;
+    margin: 0 !important;
+    padding: 20px !important;
     background: var(--bg-primary) !important;
     color: var(--text-primary) !important;
-    padding: 25px !important;
     min-height: 100vh !important;
     display: flex !important;
     flex-direction: column !important;
-    position: relative !important;
-    overflow-x: hidden !important;
+    align-items: center !important;
 }}
 
+/* Space Background Animation */
 body::before {{
     content: '' !important;
     position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-image:
         radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.4), transparent),
-        radial-gradient(0.5px 0.5px at 40px 70px, rgba(255,255,255,0.2), transparent),
-        radial-gradient(0.8px 0.8px at 90px 40px, rgba(255,255,255,0.3), transparent),
-        radial-gradient(0.3px 0.3px at 130px 80px, rgba(255,255,255,0.1), transparent),
         radial-gradient(1px 1px at 160px 30px, rgba(255,255,255,0.25), transparent);
-    background-repeat: repeat !important;
-    background-size: 300px 150px !important;
-    animation: voidDrift 40s linear infinite !important;
+    background-size: 300px 300px !important;
+    animation: voidDrift 60s linear infinite !important;
     pointer-events: none !important;
-    z-index: 1 !important;
-    opacity: 1 !important;
-    transition: opacity 0.3s ease !important;
+    z-index: -1 !important;
+    opacity: 0.5 !important;
 }}
-[data-theme="light"] body::before {{ opacity: 0 !important; }}
-@keyframes voidDrift {{
-    0% {{ transform: translateX(0) translateY(0); opacity: 0.6; }}
-    100% {{ transform: translateX(-300px) translateY(-150px); opacity: 0.4; }}
-}}
+@keyframes voidDrift {{ from {{ background-position: 0 0; }} to {{ background-position: 0 600px; }} }}
 
 .theme-toggle {{
-    position: fixed !important;
-    top: 25px !important;
-    right: 25px !important;
+    position: fixed !important; top: 20px !important; right: 20px !important;
+    width: 45px !important; height: 45px !important;
+    border-radius: 50% !important; border: none !important;
+    background: rgba(255,255,255,0.1) !important;
+    color: #fff !important; font-size: 20px !important;
+    cursor: pointer !important; backdrop-filter: blur(10px) !important;
     z-index: 1000 !important;
-    width: 55px !important;
-    height: 55px !important;
-    border: none !important;
-    border-radius: 50% !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 24px !important;
-    color: #ffffff !important;
-    box-shadow: 0 8px 25px var(--shadow-dark), 0 0 0 1px var(--border-light) !important;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-    backdrop-filter: blur(20px) !important;
-    background: rgba(255,255,255,0.15) !important;
-}}
-.theme-toggle:hover {{
-    transform: scale(1.1) rotate(180deg) !important;
-    box-shadow: 0 15px 35px rgba(0,255,255,0.4), 0 0 0 1px var(--cyan-accent) !important;
-}}
-[data-theme="light"] .theme-toggle {{
-    background: rgba(30,41,59,0.9) !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
 }}
 
-.content-wrapper {{
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-    position: relative !important;
-    z-index: 10 !important;
-}}
 .scroll-container {{
-    flex: 1 !important;
-    max-height: 85vh !important;
-    height: calc(100vh - 220px) !important;
-    width: 75% !important;
-    max-width: none !important;
-    min-width: 680px !important;
-    margin: 0 auto !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: var(--text-primary) var(--bg-secondary) !important;
+    width: 80% !important;        /* ✅ UPDATED: Fixed 80% width */
+    max-width: none !important;   /* ✅ UPDATED: Removed cap */
+    min-width: 600px !important;  /* ✅ UPDATED: Safe minimum */
     background: var(--bg-secondary) !important;
     backdrop-filter: blur(30px) !important;
     border: 1px solid var(--border-light) !important;
     border-radius: 24px !important;
     padding: 40px !important;
-    box-shadow:
-        0 35px 70px var(--shadow-dark),
-        inset 0 1px 0 var(--border-light) !important;
-    transition: all 0.3s ease !important;
+    box-shadow: 0 35px 70px var(--shadow-dark) !important;
+    margin-top: 20px !important;
 }}
 
-/* 🆕 Tabs */
-.tabs-container {{
-    margin-bottom: 20px !important;
-}}
-.tabs-header {{
-    display: flex !important;
-    background: var(--bg-primary) !important;
-    border-radius: 16px !important;
-    overflow: hidden !important;
-    box-shadow: 0 10px 30px var(--shadow-dark) !important;
-    margin-bottom: 20px !important;
-}}
-.tabs-header label {{
-    flex: 1 !important;
-    padding: 14px 18px !important;
-    text-align: center !important;
-    cursor: pointer !important;
-    font-weight: 600 !important;
-    font-size: 15px !important;
-    color: var(--text-secondary) !important;
-    background: rgba(255,255,255,0.03) !important;
-    border-bottom: 3px solid transparent !important;
-    transition: all 0.3s ease !important;
-}}
-.tabs-header label:hover {{
-    color: var(--text-primary) !important;
-    background: var(--bg-secondary) !important;
-}}
-.tabs-radio {{
-    display: none !important;
-}}
-.tab-content {{
-    display: none !important;
-}}
-#tab-regional:checked ~ .tabs-header label[for="tab-regional"],
-#tab-national:checked ~ .tabs-header label[for="tab-national"],
-#tab-international:checked ~ .tabs-header label[for="tab-international"] {{
-    color: var(--cyan-accent) !important;
-    background: var(--bg-secondary) !important;
-    border-bottom-color: var(--cyan-accent) !important;
-    box-shadow: 0 8px 25px rgba(0,255,255,0.2) !important;
-}}
-#tab-regional:checked ~ .tab-bodies #content-regional,
-#tab-national:checked ~ .tab-bodies #content-national,
-#tab-international:checked ~ .tab-bodies #content-international {{
-    display: block !important;
-}}
-
-.news-card {{ display: block !important; width: 100% !important; margin-bottom: 45px !important; padding: 0 !important; }}
-.card-content {{
-    background: var(--card-bg) !important;
-    backdrop-filter: blur(25px) saturate(1.3) !important;
-    border: 1px solid var(--border-card) !important;
-    border-left: 3px solid transparent !important;
-    background-clip: padding-box !important;
-    border-radius: 24px !important;
-    padding: 40px !important;
-    box-shadow:
-        0 25px 60px var(--shadow-dark),
-        0 0 0 1px var(--border-light),
-        inset 0 1px 0 var(--border-card) !important;
-    margin: 0 !important;
-    min-height: 220px !important;
-    position: relative !important;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-    color: var(--text-primary) !important;
-}}
-.card-content:hover {{
-    border-left-color: var(--cyan-accent) !important;
-    box-shadow:
-        0 35px 80px rgba(0,255,255,0.15),
-        0 0 0 1px var(--cyan-accent),
-        inset 0 1px 0 var(--border-card) !important;
-    transform: translateY(-5px) !important;
-}}
-.card-image {{
-    width: 100% !important;
-    height: 180px !important;
-    object-fit: cover !important;
-    border-radius: 20px !important;
-    margin-bottom: 25px !important;
-    box-shadow: 0 15px 40px var(--shadow-dark), inset 0 1px 0 var(--border-light) !important;
-    display: block !important;
-    border: 1px solid var(--border-card) !important;
-}}
-.card-title {{
-    margin: 0 0 18px 0 !important;
-    font-size: 22px !important;
-    line-height: 1.4 !important;
-    color: var(--text-primary) !important;
-}}
-.card-title a {{
-    color: var(--text-primary) !important;
-    text-decoration: none !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-}}
-.card-title a:hover {{
-    color: var(--text-white) !important;
-    text-shadow: 0 0 15px rgba(0,255,255,0.4) !important;
-}}
-.card-source {{
-    color: var(--text-secondary) !important;
-    margin: 0 0 22px 0 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    background: rgba(255,255,255,0.04) !important;
-    padding: 8px 18px !important;
-    border-radius: 25px !important;
-    display: inline-block !important;
-    border: 1px solid var(--border-light) !important;
-}}
-.card-summary {{
-    color: var(--text-light) !important;
-    line-height: 1.8 !important;
-    margin: 0 0 30px 0 !important;
-    font-size: 16px !important;
-    border-left: 2px solid transparent !important;
-    padding: 25px !important;
-    background: var(--card-summary) !important;
-    border-radius: 16px !important;
-    box-shadow: inset 0 2px 15px var(--shadow-dark) !important;
-}}
-.card-summary:hover {{
-    border-left-color: var(--cyan-accent) !important;
-}}
-.read-more {{
-    display: inline-block !important;
-    color: var(--text-primary) !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    padding: 14px 28px !important;
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid var(--border-card) !important;
-    border-radius: 30px !important;
-    box-shadow: 0 5px 20px var(--shadow-dark) !important;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-    position: relative !important;
-    overflow: hidden !important;
-}}
-.read-more:hover {{
-    color: var(--text-white) !important;
-    background: rgba(0,255,255,0.1) !important;
-    border-color: var(--cyan-accent) !important;
-    box-shadow: 0 10px 30px rgba(0,255,255,0.2), 0 0 25px rgba(0,255,255,0.3) !important;
-    transform: translateY(-2px) !important;
-}}
-.scroll-spacer {{
-    height: 60px !important;
-    display: block !important;
-}}
-.footer {{
-    margin-top: auto !important;
-    color: var(--text-secondary) !important;
-    text-align: center !important;
-    padding: 30px !important;
-    font-size: 14px !important;
-}}
-.scroll-container::-webkit-scrollbar {{ width: 8px !important; }}
-.scroll-container::-webkit-scrollbar-track {{
-    background: var(--bg-secondary) !important;
-    border-radius: 4px !important;
-}}
-.scroll-container::-webkit-scrollbar-thumb {{
-    background: linear-gradient(180deg, var(--text-primary), var(--text-white)) !important;
-    border-radius: 4px !important;
-    opacity: 0.6 !important;
-}}
-.scroll-container::-webkit-scrollbar-thumb:hover {{
-    background: linear-gradient(180deg, var(--cyan-accent), var(--text-primary)) !important;
-    opacity: 1 !important;
-}}
 h2 {{
-    color: var(--text-primary) !important;
+    color: var(--text-white) !important;
     text-align: center !important;
     border-bottom: 2px solid var(--border-light) !important;
-    padding-bottom: 25px !important;
-    margin-bottom: 35px !important;
+    padding-bottom: 20px !important;
+    margin-bottom: 30px !important;
     font-weight: 700 !important;
-    font-size: 28px !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 1px !important;
 }}
 
-@media screen and (max-width: 1400px) {{
-    .scroll-container {{ width: 85% !important; min-width: 600px !important; padding: 35px !important; }}
+.news-card {{ margin-bottom: 40px !important; }}
+.card-content {{
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: 20px !important;
+    padding: 30px !important;
+    box-shadow: 0 10px 30px var(--shadow-dark) !important;
+    transition: transform 0.3s ease !important;
 }}
-@media screen and (max-width: 1000px) {{
-    .scroll-container {{ width: 92% !important; min-width: 0 !important; padding: 30px !important; }}
-    body {{ max-width: 98vw !important; }}
+.card-content:hover {{ transform: translateY(-5px) !important; border-color: var(--cyan-accent) !important; }}
+
+.card-image {{
+    width: 100% !important; height: 350px !important; /* ✅ UPDATED: Taller images */
+    object-fit: cover !important;
+    border-radius: 12px !important; margin-bottom: 20px !important;
+    border: 1px solid var(--border-card) !important;
 }}
-@media screen and (max-width: 600px) {{
-    .scroll-container {{ padding: 25px !important; }}
-    .card-content {{ padding: 35px !important; }}
-    h2 {{ font-size: 24px !important; }}
-    .theme-toggle {{ width: 50px !important; height: 50px !important; font-size: 20px !important; }}
+
+.card-title a {{
+    color: var(--text-white) !important; text-decoration: none !important;
+    font-size: 24px !important; /* ✅ UPDATED: Larger font */
+    font-weight: 600 !important; display: block !important;
+    margin-bottom: 10px !important;
+}}
+.card-title a:hover {{ text-decoration: underline !important; color: var(--cyan-accent) !important; }}
+
+.card-source {{
+    display: inline-block !important; padding: 5px 12px !important;
+    background: rgba(255,255,255,0.05) !important; border-radius: 15px !important;
+    font-size: 13px !important; color: var(--text-secondary) !important;
+    margin-bottom: 15px !important; border: 1px solid var(--border-light) !important;
+}}
+
+.card-summary {{
+    color: var(--text-light) !important; line-height: 1.7 !important;
+    font-size: 16px !important; /* ✅ UPDATED: Larger text */
+    margin-bottom: 20px !important;
+}}
+
+.read-more {{
+    display: inline-block !important; padding: 10px 20px !important;
+    background: transparent !important; border: 1px solid var(--cyan-accent) !important;
+    color: var(--cyan-accent) !important; text-decoration: none !important;
+    border-radius: 25px !important; font-weight: 600 !important; font-size: 14px !important;
+    transition: all 0.3s ease !important;
+}}
+.read-more:hover {{ background: var(--cyan-accent) !important; color: #000 !important; }}
+
+.footer {{
+    text-align: center !important; margin-top: 40px !important;
+    color: var(--text-secondary) !important; font-size: 13px !important;
+    padding-bottom: 20px !important;
+}}
+
+@media (max-width: 1000px) {{
+    .scroll-container {{ width: 90% !important; min-width: 0 !important; }}
+}}
+@media (max-width: 768px) {{
+    .scroll-container {{ width: 95% !important; padding: 20px !important; }}
+    .card-content {{ padding: 20px !important; }}
+    h2 {{ font-size: 22px !important; }}
+    .card-image {{ height: 200px !important; }}
 }}
 </style>
 </head>
 <body>
-<button class="theme-toggle" id="themeToggle" title="Switch to Light Mode">☀️</button>
+<button class="theme-toggle" id="themeToggle" title="Toggle Theme">☀️</button>
 
-<h2>🌌 IIRS - Daily Space News Digest</h2>
-<p style='color:var(--text-secondary);margin-bottom:30px;text-align:center;font-style:italic;font-size:16px;font-weight:400;letter-spacing:1px'>
-    <i>{timestamp} | {len(regional_news) + len(national_news) + len(international_news)} Space Tech Updates</i>
-</p>
+<div class="scroll-container">
+    <h2>🌌 IIRS Daily Space Digest</h2>
+    <p style="text-align:center; color:var(--text-secondary); margin-top:-20px; margin-bottom:40px;">
+        {timestamp} | {len(all_news)} Updates Found
+    </p>
 
-<div class="content-wrapper">
-    <div class="scroll-container">
-        <div class="tabs-container">
-            <input type="radio" name="tabs" id="tab-regional" class="tabs-radio" checked>
-            <input type="radio" name="tabs" id="tab-national" class="tabs-radio">
-            <input type="radio" name="tabs" id="tab-international" class="tabs-radio">
+    {all_articles_html}
 
-            <div class="tabs-header">
-                <label for="tab-regional">🏔️ Regional</label>
-                <label for="tab-national">🇮🇳 National</label>
-                <label for="tab-international">🌌 International</label>
-            </div>
-
-            <div class="tab-bodies">
-                <div id="content-regional" class="tab-content">
-                    {regional_html}
-                </div>
-                <div id="content-national" class="tab-content">
-                    {national_html}
-                </div>
-                <div id="content-international" class="tab-content">
-                    {international_html}
-                </div>
-            </div>
-        </div>
-
-        <div class="scroll-spacer"></div>
+    <div class="footer">
+        IIRS Library | Indian Institute of Remote Sensing | Dehradun<br>
+        <small>Automated Digest System</small>
     </div>
 </div>
 
-<div class="footer">
-    <p style='margin:0'><small>IIRS Library | Indian Institute of Remote Sensing | Dehradun</small></p>
-</div>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {{
+    const btn = document.getElementById('themeToggle');
     const html = document.documentElement;
-    const toggleBtn = document.getElementById('themeToggle');
-
-    function setNightMode() {{
-        html.setAttribute('data-theme', 'dark');
-        toggleBtn.textContent = '☀️';
-        toggleBtn.title = 'Switch to Light Mode';
-        localStorage.setItem('theme', 'dark');
-    }}
-
-    function setDayMode() {{
+    
+    // Check local storage
+    if (localStorage.getItem('theme') === 'light') {{
         html.setAttribute('data-theme', 'light');
-        toggleBtn.textContent = '🌙';
-        toggleBtn.title = 'Switch to Dark Mode';
-        localStorage.setItem('theme', 'light');
+        btn.textContent = '🌙';
     }}
 
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {{
-        setDayMode();
-    }} else {{
-        setNightMode();
-    }}
-
-    toggleBtn.addEventListener('click', function() {{
-        if (html.getAttribute('data-theme') === 'dark') {{
-            setDayMode();
+    btn.addEventListener('click', () => {{
+        if (html.getAttribute('data-theme') === 'light') {{
+            html.removeAttribute('data-theme');
+            btn.textContent = '☀️';
+            localStorage.setItem('theme', 'dark');
         }} else {{
-            setNightMode();
+            html.setAttribute('data-theme', 'light');
+            btn.textContent = '🌙';
+            localStorage.setItem('theme', 'light');
         }}
     }});
-}});
 </script>
 </body>
 </html>
@@ -680,6 +438,5 @@ filename = f'IIRS_SpaceNews_Daily_{date.today().strftime("%Y%m%d")}.html'
 with open(filename, 'w', encoding='utf-8') as f:
     f.write(html_body)
 
-print(f"✅ SAVED: {filename} with "
-      f"{len(regional_news)} regional, {len(national_news)} national, {len(international_news)} international items.")
-print("📱 75% responsive width + 3 tabs + night/light mode OK.")
+print(f"✅ SAVED: {filename} with {len(all_news)} items")
+print("📱 80% responsive width + SINGLE PAGE + night/light mode OK.")
