@@ -1,8 +1,11 @@
-name: 🚀 IIRS Daily Space Digest + Gmail
+name: 🚀 IIRS Daily Space Digest + Pages Link
 on:
   schedule:
     - cron: '30 2 * * *'  # 8AM IST daily
   workflow_dispatch:     # Manual button
+
+permissions:
+  contents: write        # Required to deploy to Pages
 
 jobs:
   digest:
@@ -19,16 +22,36 @@ jobs:
       run: pip install feedparser
       
     - name: Generate HTML Newsletter
+      # Ensure your python script saves file as 'index.html' for this to work best!
       run: python iirs_space_digest_git.py
       
-    - name: ✅ Send HTML to Gmail
-      uses: dawidd6/action-send-mail@v4
+    - name: 🚀 Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages  # Deploys 'index.html' to this branch
+        keep_files: true
+        
+    - name: ✅ Send Link to Gmail
+      uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
-        server_port: 587
+        server_port: 465
         username: ${{ secrets.GMAIL_USER }}
         password: ${{ secrets.GMAIL_PASS }}
-        subject: '🚀 IIRS Daily Space Digest | ${{ github.run_id }}'
+        subject: '🚀 IIRS Space Digest Link | ${{ github.run_id }}'
+        # EMAIL BODY WITH LINK
+        body: |
+          Today's space digest is ready!
+          
+          🔗 READ ONLINE (Share this link):
+          https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          
+          (This link works on mobile & desktop immediately)
+          
+          Generated: ${{ steps.date.outputs.date }}
         to: ${{ secrets.GMAIL_USER }},${{ secrets.GMAIL_USER2 }},${{ secrets.GMAIL_USER3 }}
         from: 'IIRS Library <${{ secrets.GMAIL_USER }}>'
-        attachments: 'IIRS_SpaceNews_Daily_*.html'
+        # Optional: Keep attachment if you still want the file too
+        attachments: 'index.html'
