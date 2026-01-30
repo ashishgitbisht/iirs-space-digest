@@ -1,7 +1,7 @@
 name: 🚀 IIRS Daily Space Digest + Pages Link
 on:
   schedule:
-    - cron: '30 2 * * *'  # 8AM IST daily
+    - cron: '30 4 * * *'  # 8AM IST daily
   workflow_dispatch:     # Manual button
 
 permissions:
