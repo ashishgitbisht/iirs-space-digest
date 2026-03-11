@@ -45,7 +45,10 @@ NATIONAL_FEEDS = [
     'https://indianexpress.com/section/science/feed/',
     'https://www.thehindu.com/sci-tech/science/rssfeed/',
     'https://www.thehindu.com/news/national/rssfeed/',
-    'https://www.isro.gov.in/rssnews.xml'
+    'https://www.isro.gov.in/rssnews.xml',
+    'https://news.google.com/rss',                  # Top stories (India by default)
+'https://news.google.com/rss/topics/...',       # Topics (Science/Tech)
+'https://news.google.com/rss/search?q=ISRO'    # Keyword search
 ]
 
 INTERNATIONAL_FEEDS = [
